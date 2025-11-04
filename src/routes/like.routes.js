@@ -3,7 +3,7 @@ import {
     getLikedVideos,
     toggleCommentLike,
     toggleVideoLike,
-
+getUserLikedComments,
     toggleTweetLike
  } from "../controllers/Like.controllers.js";
 
@@ -17,6 +17,6 @@ router.post("/toggle/c/:commentId", toggleCommentLike);
 
 router.route("/toggle/t/:tweetId").post(toggleTweetLike);
 router.route("/videos").get(getLikedVideos);
-
+router.get("/liked-comments", verifyJWT, getUserLikedComments);
 
 export default router

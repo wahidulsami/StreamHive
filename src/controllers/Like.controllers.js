@@ -39,7 +39,8 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
       );
       liked = false;
     } else {
-      await Like.create([{ video: videoId, likedBy: userId }], { session });
+    await Like.create([{ video: videoId, comment: undefined, tweet: undefined, likedBy: userId }], { session });
+
       updated = await Video.findByIdAndUpdate(
         videoId,
         { $inc: { likesCount: 1 } },
@@ -110,9 +111,9 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     { $inc: { likesCount: -1 } },
     { new: true, session, projection: { likesCount: 1 } }
   );
-  liked = false; // <- this should be false
+  liked = false; 
 } else {
-  // Like
+  
   await Like.create([{ comment: commentId, likedBy: userId }], { session });
   updated = await Comment.findByIdAndUpdate(
     commentId,
@@ -148,6 +149,10 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   }
 });
 
+
+
+
+
 const toggleTweetLike = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
   const userId = req.user._id;
@@ -169,32 +174,38 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
   const session = await mongoose.startSession();
   session.startTransaction();
+
   try {
-    const existLike = await Tweet.findOne({
+    const existingLike = await Like.findOne({
       tweet: tweetId,
       likedBy: userId,
     }).session(session);
 
     let liked, updated;
 
-    if (existLike) {
-      await Like.deleteOne({ _id: existLike._id }, { session });
-
+    if (existingLike) {
+      // Unlike
+      await Like.deleteOne({ _id: existingLike._id }, { session });
       updated = await Tweet.findByIdAndUpdate(
         tweetId,
         { $inc: { likesCount: -1 } },
         { new: true, session, projection: { likesCount: 1 } }
       );
-
       liked = false;
     } else {
-      await Like.create([{ tweet: tweetId, likedBy: userId }], { session });
+      // Like
+      await Like.create([{
+        tweet: tweetId,
+        video: undefined,
+        comment: undefined,
+        likedBy: userId
+      }], { session });
+
       updated = await Tweet.findByIdAndUpdate(
         tweetId,
-        { $inc: { likesCount: 1 } }, // likesCount +1
+        { $inc: { likesCount: 1 } },
         { new: true, session, projection: { likesCount: 1 } }
       );
-
       liked = true;
     }
 
@@ -208,26 +219,18 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: liked
-        ? "Tweet liked successfully"
-        : "Tweet unliked successfully",
-      data: {
-        tweetId,
-        liked,
-        likesCount: updated.likesCount,
-      },
+      message: liked ? "Tweet liked successfully" : "Tweet unliked successfully",
+      data: { tweetId, liked, likesCount: updated.likesCount },
     });
-  } catch (error) {
-  await session.abortTransaction();
-  session.endSession();
-  console.error("Comment like toggle failed:", error); // <- keep this
-  return res.status(500).json({
-    success: false,
-    message: error.message || "Something went wrong",
-  });
-}
 
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Tweet like toggle failed:", error);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
 });
+
 
 const getLikedVideos = asyncHandler(async (req, res) => {
   const LikedvideosDetails = await Like.aggregate([
@@ -264,6 +267,22 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   });
 });
 
-export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos };
+
+ const getUserLikedComments = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // find all likes of type comment by this user
+    const likes = await Like.find({ comment: { $ne: null }, likedBy: userId }).select('comment likedBy');
+
+    // return only comment IDs
+    const likedComments = likes.map(l => l.comment);
+
+    return res.json({ success: true, likedComments });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 
+export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos , getUserLikedComments };

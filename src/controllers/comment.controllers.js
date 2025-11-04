@@ -123,11 +123,12 @@ const  updateComment = asyncHandler(async (req , res) => {
       return res.status(403).json({ success: false, message: "You are not authorized to update this comment" });
     }
 
-    const newComment = await Comment.findByIdAndUpdate(
-        commentId,
-        {content},
-        {new : true}
-    )
+ const newComment = await Comment.findByIdAndUpdate(
+  commentId,
+  { content },
+  { new: true }
+).populate("owner", "username avatar");
+
     if (!newComment) {
         return res.status(500).json({ success: false, message: "Failed to update comment" });
     }
