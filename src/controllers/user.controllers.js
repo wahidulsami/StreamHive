@@ -26,7 +26,8 @@ res.status(error.statusCode || 500).json({
 
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, email, username, password } = req.body;
- 
+  console.log("Files received:", req.files); // Multer দিয়ে আসা ফাইল
+  console.log("Body received:", req.body);   // Form data (fullname, email, etc.)
   if (
     [fullname, email, username, password].some((field) => field?.trim() === "")
   ) {
@@ -93,9 +94,6 @@ const cookieOptions = {
   sameSite: "None",                
   maxAge: 24 * 60 * 60 * 1000,    
 };
-
-
-
   const { accessToken, refreshToken } = await genrateAccessAndRefreshToken(
     user._id
   );
@@ -161,10 +159,6 @@ const cookieOptions = {
   maxAge: 24 * 60 * 60 * 1000,    
 };
 
-
-
-
-
   return res
     .status(201)
     .cookie("accessToken", accessToken, cookieOptions)
@@ -197,8 +191,6 @@ const logoutUser = asyncHandler(async (req, res) => {
     secure: true,
     sameSite: "None",
   };
-
-
 
 
   return res
@@ -240,6 +232,8 @@ const resetPasswordOTP = asyncHandler(async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Password reset OTP",
+      //       text: `Hello ${user.name},Your OTP for resetting your password is ${otp}.
+      // Use this OTP to proceed with resetting your password`,
       html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(
         "{{email}}",
         user.email
@@ -349,13 +343,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
  
-  const cookieOptions = {
-  httpOnly: true,                 
-  secure: true,                    
+  const cokiesOptions = {
+  httpOnly: true,                  // JS can't access the cookie
+  secure: true,                    // must be true in production (HTTPS)
   sameSite: "None",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   };
-
 
     const { accessToken, newRefreshToken } = await genrateAccessAndRefreshToken(
       user._id
@@ -363,8 +356,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, cookieOptions)
-      .cookie("refreshToken", newRefreshToken, cookieOptions)
+      .cookie("accessToken", accessToken, cokiesOptions)
+      .cookie("refreshToken", newRefreshToken, cokiesOptions)
       .json({
   success: true,
   message: "Tokens refreshed successfully",
