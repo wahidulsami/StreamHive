@@ -9,6 +9,10 @@ import { PASSWORD_RESET_TEMPLATE } from "../config/emailTemplates.js";
 const genrateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
@@ -17,10 +21,8 @@ const genrateAccessAndRefreshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-res.status(error.statusCode || 500).json({
-      success: false,
-      message: "something went wrong while generating tokens",
-    });
+    // হেল্পার ফাংশন থেকে Error throw করতে হয়, res.status ব্যবহার করা যাবে না
+    throw new Error(error.message || "Something went wrong while generating tokens");
   }
 };
 

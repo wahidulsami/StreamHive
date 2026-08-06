@@ -10,37 +10,35 @@ const UserSchema = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true, // Add index for faster queries / scarch
+      index: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
-      lowcase: true,
+      lowercase: true, 
       trim: true,
     },
     fullname: {
       type: String,
       required: true,
-      lowcase: true,
+      lowercase: true, 
       trim: true,
-      index: true, // Add index for faster queries / scarch
+      index: true,
     },
-      bio: {
-    type: String,
-    default: "",
-  },
-social: {
-  url: { type: String, default: "" },
-  facebook: { type: String, default: "" },
-  twitter: { type: String, default: "" },
-  linkedin: { type: String, default: "" },
-  instagram: { type: String, default: "" },
-},
-
+    bio: {
+      type: String,
+      default: "",
+    },
+    social: {
+      url: { type: String, default: "" },
+      facebook: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+    },
     avatar: {
       type: String,
-      // required:true
     },
     coverImage: {
       type: String,
@@ -51,26 +49,26 @@ social: {
         ref: "Video",
       },
     ],
-
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
     },
     resetOtp: {
       type: String,
       default: "",
     },
-      isOtpVerified:
-       { type: Boolean,
-         default: false },
+    isOtpVerified: {
+      type: Boolean,
+      default: false,
+    },
     resetOtpExpireAt: {
       type: Number,
       default: 0,
     },
-      subscribersCount: {
-    type: Number,
-    default: 0,
-  },
+    subscribersCount: {
+      type: Number,
+      default: 0,
+    },
     refreshToken: {
       type: String,
     },
@@ -78,6 +76,7 @@ social: {
   { timestamps: true }
 );
 
+// Password Hash Middleware
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -85,10 +84,12 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.methods.ispasswordCorrect = async function (password) {
+// Method for checking password
+UserSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
+// Access Token Generation
 UserSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -104,6 +105,7 @@ UserSchema.methods.generateAccessToken = function () {
   );
 };
 
+// Refresh Token Generation
 UserSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
@@ -115,6 +117,5 @@ UserSchema.methods.generateRefreshToken = function () {
     }
   );
 };
-
 
 export const User = mongoose.model("User", UserSchema);

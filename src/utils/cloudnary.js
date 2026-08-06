@@ -9,18 +9,40 @@ cloudinary.config({
 
 export const uploadCloudinary = async (localFilePath) => {
   try {
-    if (!localFilePath) throw new Error("No file path provided");
+    if (!localFilePath) {
+      throw new Error("No file path provided to uploadCloudinary");
+    }
+
+    if (!fs.existsSync(localFilePath)) {
+      throw new Error(`File does not exist at path: ${localFilePath}`);
+    }
 
     const result = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
       secure: true,
     });
 
-    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
+
     return result;
   } catch (err) {
-    console.error("Cloudinary upload failed:", err);
-    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
-    return null;
+    console.error("❌ Cloudinary Upload Error Details:", {
+      message: err.message,
+      httpCode: err.http_code, 
+      name: err.name,
+    });
+
+    if (localFilePath && fs.existsSync(localFilePath)) {
+      try {
+        fs.unlinkSync(localFilePath);
+      } catch (unlinkErr) {
+        console.error("Failed to delete local temporary file:", unlinkErr.message);
+      }
+    }
+    
+    throw err; 
   }
 };
