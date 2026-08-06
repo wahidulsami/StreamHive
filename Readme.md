@@ -128,17 +128,6 @@ MongoDB
 
 ---
 
-## 🗺️ Roadmap
-
-- [x] Authentication
-- [x] Video CRUD
-- [x] Comments & Likes
-- [x] Cloud Media Upload
-- [ ] Real-time Notifications
-- [ ] Recommendation System
-- [ ] Admin Dashboard
-
----
 
 ## 🤝 Contributing
 
