@@ -160,4 +160,3 @@ MIT License
 
 GitHub: https://github.com/wahidulsami
 
-Portfolio: https://samicode.me
