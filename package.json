@@ -36,6 +36,7 @@
     "mongoose-aggregate-paginate-v2": "^1.1.4",
     "multer": "^2.0.2",
     "nodemailer": "^10.0.10",
+    "winston": "^3.19.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {

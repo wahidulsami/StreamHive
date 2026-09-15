@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { generalLimiter } from "./middlewares/rateLimit.middlewares.js";
+import logger from "./log/logger.js";
 
 const app = express();
 
@@ -29,6 +30,27 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.use(generalLimiter);
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const logData = {
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip,
+    };
+
+    if (res.statusCode >= 400) {
+      logger.warn("HTTP Request", logData);
+    } else {
+      logger.info("HTTP Request", logData);
+    }
+  });
+  next();
+});
 
 // routes import
 

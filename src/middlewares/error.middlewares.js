@@ -1,3 +1,5 @@
+import logger from "../log/logger.js";
+
 const errorHandler = (err, req, res, next) => {
   let error = err;
 
@@ -8,6 +10,16 @@ const errorHandler = (err, req, res, next) => {
   const statusCode = error.statusCode || 500;
   const message = error.message || "Internal Server Error";
   const errors = error.errors || [];
+
+  logger.error("Error occurred", {
+    statusCode,
+    message,
+    errors,
+    stack: error.stack,
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+  });
 
   const response = {
     success: false,
