@@ -54,4 +54,8 @@ app.use("/api/v1/tweet", tweetRouter);
 
 app.use("/api/v1/channel", channelRouter);
 
+import { errorHandler } from "./middlewares/error.middlewares.js";
+
+app.use(errorHandler);
+
 export { app };

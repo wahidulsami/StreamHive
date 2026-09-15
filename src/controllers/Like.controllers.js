@@ -1,6 +1,8 @@
-import mongoose, { startSession } from "mongoose";
+import mongoose from "mongoose";
 import { Like } from "../models/Like.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { Comment } from "../models/Comment.model.js";
 import { Video } from "../models/Video.model.js";
 import { Tweet } from "../models/Tweet.model.js";
@@ -10,14 +12,12 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid video Id" });
+    throw new ApiError(400, "Invalid video ID");
   }
 
   const videoExists = await Video.findById(videoId).select("_id likesCount");
   if (!videoExists) {
-    return res.status(404).json({ success: false, message: "Video not found" });
+    throw new ApiError(404, "Video not found");
   }
 
   const session = await mongoose.startSession();
@@ -39,8 +39,10 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
       );
       liked = false;
     } else {
-    await Like.create([{ video: videoId, comment: undefined, tweet: undefined, likedBy: userId }], { session });
-
+      await Like.create(
+        [{ video: videoId, comment: undefined, tweet: undefined, likedBy: userId }],
+        { session }
+      );
       updated = await Video.findByIdAndUpdate(
         videoId,
         { $inc: { likesCount: 1 } },
@@ -57,20 +59,17 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    return res.status(200).json({
-      success: true,
-      message: liked
-        ? "Video liked successfully"
-        : "Video unliked successfully",
-      data: { videoId, liked, likesCount: updated.likesCount },
-    });
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        { videoId, liked, likesCount: updated.likesCount },
+        liked ? "Video liked successfully" : "Video unliked successfully"
+      )
+    );
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.error("Like toggle failed:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Something went wrong" });
+    throw new ApiError(500, "Failed to toggle video like");
   }
 });
 
@@ -79,18 +78,12 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Invalid comment Id... " });
+    throw new ApiError(400, "Invalid comment ID");
   }
 
-  const commentExists =
-    await Comment.findById(commentId).select("_id likesCount");
+  const commentExists = await Comment.findById(commentId).select("_id likesCount");
   if (!commentExists) {
-    return res.status(404).json({
-      success: false,
-      message: "Comment not found",
-    });
+    throw new ApiError(404, "Comment not found");
   }
 
   const session = await mongoose.startSession();
@@ -103,26 +96,23 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     }).session(session);
     let liked, updated;
 
-  if (existingLike) {
-  // Unlike
-  await Like.deleteOne({ _id: existingLike._id }, { session });
-  updated = await Comment.findByIdAndUpdate(
-    commentId,
-    { $inc: { likesCount: -1 } },
-    { new: true, session, projection: { likesCount: 1 } }
-  );
-  liked = false; 
-} else {
-  
-  await Like.create([{ comment: commentId, likedBy: userId }], { session });
-  updated = await Comment.findByIdAndUpdate(
-    commentId,
-    { $inc: { likesCount: 1 } },
-    { new: true, session, projection: { likesCount: 1 } }
-  );
-  liked = true;
-}
-
+    if (existingLike) {
+      await Like.deleteOne({ _id: existingLike._id }, { session });
+      updated = await Comment.findByIdAndUpdate(
+        commentId,
+        { $inc: { likesCount: -1 } },
+        { new: true, session, projection: { likesCount: 1 } }
+      );
+      liked = false;
+    } else {
+      await Like.create([{ comment: commentId, likedBy: userId }], { session });
+      updated = await Comment.findByIdAndUpdate(
+        commentId,
+        { $inc: { likesCount: 1 } },
+        { new: true, session, projection: { likesCount: 1 } }
+      );
+      liked = true;
+    }
 
     if (updated.likesCount < 0) {
       updated.likesCount = 0;
@@ -132,44 +122,31 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    return res.status(200).json({
-      success: true,
-      message: liked
-        ? "Comment liked successfully"
-        : "Comment unliked successfully",
-      data: { commentId, liked, likesCount: updated.likesCount },
-    });
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        { commentId, liked, likesCount: updated.likesCount },
+        liked ? "Comment liked successfully" : "Comment unliked successfully"
+      )
+    );
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.error("Comment like toggle failed:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Something went wrong" });
+    throw new ApiError(500, "Failed to toggle comment like");
   }
 });
-
-
-
-
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
   const userId = req.user._id;
 
   if (!tweetId || !mongoose.Types.ObjectId.isValid(tweetId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid tweet Id",
-    });
+    throw new ApiError(400, "Invalid tweet ID");
   }
 
   const tweetExists = await Tweet.findById(tweetId).select("_id likesCount");
   if (!tweetExists) {
-    return res.status(404).json({
-      success: false,
-      message: "Tweet not found",
-    });
+    throw new ApiError(404, "Tweet not found");
   }
 
   const session = await mongoose.startSession();
@@ -184,7 +161,6 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     let liked, updated;
 
     if (existingLike) {
-      // Unlike
       await Like.deleteOne({ _id: existingLike._id }, { session });
       updated = await Tweet.findByIdAndUpdate(
         tweetId,
@@ -193,14 +169,10 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
       );
       liked = false;
     } else {
-      // Like
-      await Like.create([{
-        tweet: tweetId,
-        video: undefined,
-        comment: undefined,
-        likedBy: userId
-      }], { session });
-
+      await Like.create(
+        [{ tweet: tweetId, video: undefined, comment: undefined, likedBy: userId }],
+        { session }
+      );
       updated = await Tweet.findByIdAndUpdate(
         tweetId,
         { $inc: { likesCount: 1 } },
@@ -217,23 +189,22 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    return res.status(200).json({
-      success: true,
-      message: liked ? "Tweet liked successfully" : "Tweet unliked successfully",
-      data: { tweetId, liked, likesCount: updated.likesCount },
-    });
-
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        { tweetId, liked, likesCount: updated.likesCount },
+        liked ? "Tweet liked successfully" : "Tweet unliked successfully"
+      )
+    );
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.error("Tweet like toggle failed:", error);
-    return res.status(500).json({ success: false, message: "Something went wrong" });
+    throw new ApiError(500, "Failed to toggle tweet like");
   }
 });
 
-
 const getLikedVideos = asyncHandler(async (req, res) => {
-  const LikedvideosDetails = await Like.aggregate([
+  const likedVideos = await Like.aggregate([
     {
       $match: {
         likedBy: new mongoose.Types.ObjectId(req.user._id),
@@ -247,9 +218,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         as: "LikedvideosData",
       },
     },
-    {
-      $unwind: "$LikedvideosData",
-    },
+    { $unwind: "$LikedvideosData" },
     {
       $project: {
         _id: 0,
@@ -258,31 +227,29 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log("liked videos", LikedvideosDetails);
-
-  return res.status(200).json({
-    success: true,
-    message: "fetched liked videos successfully",
-    LikedvideosDetails,
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, likedVideos, "Liked videos fetched successfully"));
 });
 
+const getUserLikedComments = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
 
- const getUserLikedComments = async (req, res) => {
-  try {
-    const userId = req.user._id;
+  const likes = await Like.find({ comment: { $ne: null }, likedBy: userId }).select(
+    "comment likedBy"
+  );
 
-    // find all likes of type comment by this user
-    const likes = await Like.find({ comment: { $ne: null }, likedBy: userId }).select('comment likedBy');
+  const likedComments = likes.map((l) => l.comment);
 
-    // return only comment IDs
-    const likedComments = likes.map(l => l.comment);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, likedComments, "Liked comments fetched successfully"));
+});
 
-    return res.json({ success: true, likedComments });
-  } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
-  }
+export {
+  toggleCommentLike,
+  toggleTweetLike,
+  toggleVideoLike,
+  getLikedVideos,
+  getUserLikedComments,
 };
-
-
-export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos , getUserLikedComments };

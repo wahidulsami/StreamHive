@@ -1,17 +1,20 @@
-import mongoose, { mongo }  from "mongoose";
+import mongoose from "mongoose";
 import { Subscription } from "../models/Subcripation.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/User.model.js";
+
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   const userId = req.user?._id;
 
   if (!channelId || !mongoose.Types.ObjectId.isValid(channelId)) {
-    return res.status(400).json({ success: false, message: "Invalid channel Id" });
+    throw new ApiError(400, "Invalid channel ID");
   }
 
   if (userId.toString() === channelId) {
-    return res.status(400).json({ success: false, message: "You cannot subscribe to yourself" });
+    throw new ApiError(400, "You cannot subscribe to yourself");
   }
 
   const existingSubscription = await Subscription.findOne({
@@ -23,81 +26,70 @@ const toggleSubscription = asyncHandler(async (req, res) => {
   let updatedChannel;
 
   if (existingSubscription) {
-    // Unsubscribe
     await Subscription.findByIdAndDelete(existingSubscription._id);
-
     updatedChannel = await User.findByIdAndUpdate(
       channelId,
       { $inc: { subscribersCount: -1 } },
       { new: true, projection: { subscribersCount: 1 } }
     );
-
     subscribed = false;
   } else {
-    // Subscribe
     await Subscription.create({ subscriber: userId, channel: channelId });
-
     updatedChannel = await User.findByIdAndUpdate(
       channelId,
       { $inc: { subscribersCount: 1 } },
       { new: true, projection: { subscribersCount: 1 } }
     );
-
     subscribed = true;
   }
 
-  // Prevent negative subscribersCount
   if (updatedChannel && updatedChannel.subscribersCount < 0) {
     updatedChannel.subscribersCount = 0;
     await updatedChannel.save();
   }
 
-  return res.status(200).json({
-    success: true,
-    message: subscribed ? "Subscribed successfully" : "Unsubscribed successfully",
-    data: {
-      channelId,
-      subscribed,
-      subscribersCount: updatedChannel?.subscribersCount || 0,
-    },
-  });
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        channelId,
+        subscribed,
+        subscribersCount: updatedChannel?.subscribersCount || 0,
+      },
+      subscribed ? "Subscribed successfully" : "Unsubscribed successfully"
+    )
+  );
 });
 
-
 const getUserChannelsubscribersCount = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
+  const { channelId } = req.params;
 
-        if (!channelId || !mongoose.Types.ObjectId.isValid(channelId)) {
-       return res.status(400)
-       .json({ success: false, message: "Invalid channel Id" });
-    }
-   const channel = await User.findById(channelId).select("subscribersCount");
-    if(!channel){
-      return res.status(404).json({ success: false, message: "Channel not found" });
-    }
+  if (!channelId || !mongoose.Types.ObjectId.isValid(channelId)) {
+    throw new ApiError(400, "Invalid channel ID");
+  }
 
- return res
-    .status(200)
-    .json(
-      {
-        success: true,
-        message: "Channel subscribers count fetched successfully",
-        data:{subscribersCount: channel.subscribersCount || 0,}
-      
-    }
-    );
-})
+  const channel = await User.findById(channelId).select("subscribersCount");
+  if (!channel) {
+    throw new ApiError(404, "Channel not found");
+  }
 
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { subscribersCount: channel.subscribersCount || 0 },
+      "Subscribers count fetched successfully"
+    )
+  );
+});
 
 const getSubscribedChannelsData = asyncHandler(async (req, res) => {
-    const { subscriberId } = req.params;
+  const { subscriberId } = req.params;
 
-    // Validate subscriberId before using it
-    if (!subscriberId || !mongoose.Types.ObjectId.isValid(subscriberId)) {
-        return res.status(400).json({ success: false, message: "Invalid subscriber Id" });
-    }
+  if (!subscriberId || !mongoose.Types.ObjectId.isValid(subscriberId)) {
+    throw new ApiError(400, "Invalid subscriber ID");
+  }
 
-    const subscribed = await Subscription.aggregate([
+  const subscribed = await Subscription.aggregate([
     { $match: { subscriber: new mongoose.Types.ObjectId(subscriberId) } },
     {
       $lookup: {
@@ -121,20 +113,16 @@ const getSubscribedChannelsData = asyncHandler(async (req, res) => {
     },
   ]);
 
-    return res.status(200).json(
-      {success: true,
-      message: "Subscribed channels fetched successfully",
-      data: subscribed,
-    }
-    );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, subscribed, "Subscribed channels fetched successfully"));
 });
-
 
 const getChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
 
   if (!channelId || !mongoose.Types.ObjectId.isValid(channelId)) {
-    return res.status(400).json({ success: false, message: "Invalid channel Id" });
+    throw new ApiError(400, "Invalid channel ID");
   }
 
   const subscribers = await Subscription.aggregate([
@@ -159,18 +147,17 @@ const getChannelSubscribers = asyncHandler(async (req, res) => {
     },
   ]);
 
-  return res.status(200).json({
-    success: true,
-    message: "Channel subscribers fetched successfully",
-    data: subscribers,
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, subscribers, "Channel subscribers fetched successfully"));
 });
+
 const checkSubscriptionStatus = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   const userId = req.user?._id;
 
   if (!mongoose.Types.ObjectId.isValid(channelId)) {
-    return res.status(400).json({ success: false, message: "Invalid channel ID" });
+    throw new ApiError(400, "Invalid channel ID");
   }
 
   const existing = await Subscription.findOne({
@@ -178,17 +165,15 @@ const checkSubscriptionStatus = asyncHandler(async (req, res) => {
     channel: channelId,
   });
 
-  return res.status(200).json({
-    success: true,
-    subscribed: !!existing,
-  });
+  return res.status(200).json(
+    new ApiResponse(200, { subscribed: !!existing }, "Subscription status checked")
+  );
 });
 
-
 export {
-    toggleSubscription,
-    getUserChannelsubscribersCount,
-    getSubscribedChannelsData,
-    getChannelSubscribers,
-    checkSubscriptionStatus
-}
+  toggleSubscription,
+  getUserChannelsubscribersCount,
+  getSubscribedChannelsData,
+  getChannelSubscribers,
+  checkSubscriptionStatus,
+};

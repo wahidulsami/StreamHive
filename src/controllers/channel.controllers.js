@@ -1,32 +1,34 @@
 import { User } from "../models/User.model.js";
 import { Video } from "../models/Video.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-export const getChannelByusername =  asyncHandler(async (req , res) => {
-    const {username} = req.params;
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
-    if(!username){
-        return res.status(400).json({success: false , message: "Username is required"});
-    }
+export const getChannelByusername = asyncHandler(async (req, res) => {
+  const { username } = req.params;
 
-    const user = await User.findOne({username}).select
-    ("-password -refreshToken -resetOtp -resetOtpExpireAt -isOtpVerified -email");
-    if(!user){
-        return res.status(404).json({success: false , message: "User not found"});
-    }
+  if (!username) {
+    throw new ApiError(400, "Username is required");
+  }
 
-     // Get published videos owned by user
-     const videos = await Video.find({owner: user._id})
+  const user = await User.findOne({ username }).select(
+    "-password -refreshToken -resetOtp -resetOtpExpireAt -isOtpVerified -email"
+  );
+
+  if (!user) {
+    throw new ApiError(404, "Channel not found");
+  }
+
+  const videos = await Video.find({ owner: user._id })
     .sort({ createdAt: -1 })
-      .limit(10)
-      .lean();
+    .limit(10)
+    .lean();
 
-
-         return res.status(200).json({
-      success: true,
-      message: "Channel fetched successfully",
-      data: {
-        user,
-        videos,
-      },
-    });
-})
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { user, videos },
+      "Channel fetched successfully"
+    )
+  );
+});
