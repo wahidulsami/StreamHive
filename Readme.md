@@ -98,6 +98,70 @@ CLOUDINARY_API_SECRET=
 
 ---
 
+## 🐳 Docker
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+
+### Quick Start with Docker
+
+1. Create your `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+2. Fill in the required variables in `.env`. For Docker, set strong unique values for:
+
+```env
+ACCESS_TOKEN_SECRET=use-a-long-random-secret
+REFRESH_TOKEN_SECRET=use-another-long-random-secret
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=use-a-long-random-password
+MONGO_INITDB_DATABASE=youtube
+```
+
+> Docker generates `MONGODB_URI` inside the backend container and safely URL-encodes the MongoDB credentials. Do not put a Docker `localhost` URI in `.env`.
+
+3. Build and start:
+
+```bash
+docker compose up --build
+```
+
+4. The API is available at `http://localhost:8000`
+
+### Managing Containers
+
+```bash
+# Stop containers
+docker compose down
+
+# Stop and remove volumes (deletes database data)
+docker compose down -v
+
+# View logs
+docker compose logs backend
+docker compose logs mongodb
+
+# Rebuild after code changes
+docker compose up --build
+```
+
+### MongoDB
+
+- MongoDB is private to the Compose network and is not published to the host
+- Data is persisted in a named Docker volume (`mongodb_data`)
+- The database name is `youtube` (set in `src/constants.js`)
+
+### Health Checks
+
+- Backend: `GET /health` — used by Docker and orchestrators
+- MongoDB: `mongosh` ping — used by Docker Compose
+
+---
+
 ## 📡 API Modules
 
 | Module | Description |
