@@ -21,15 +21,15 @@ const genrateAccessAndRefreshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    // হেল্পার ফাংশন থেকে Error throw করতে হয়, res.status ব্যবহার করা যাবে না
+  
     throw new Error(error.message || "Something went wrong while generating tokens");
   }
 };
 
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, email, username, password } = req.body;
-  console.log("Files received:", req.files); // Multer দিয়ে আসা ফাইল
-  console.log("Body received:", req.body);   // Form data (fullname, email, etc.)
+  console.log("Files received:", req.files); 
+  console.log("Body received:", req.body);   
   if (
     [fullname, email, username, password].some((field) => field?.trim() === "")
   ) {

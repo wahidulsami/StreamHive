@@ -18,12 +18,10 @@
   "author": "sami",
   "type": "module",
   "main": "index.js",
- "scripts": {
-  "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
-  "start": "node -r dotenv/config --experimental-json-modules src/index.js"
-
-
-},
+  "scripts": {
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
+    "start": "node -r dotenv/config --experimental-json-modules src/index.js"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",
@@ -32,11 +30,12 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-openid-connect": "^2.19.2",
+    "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0",
     "mongoose-aggregate-paginate-v2": "^1.1.4",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.6"
+    "nodemailer": "^10.0.10"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

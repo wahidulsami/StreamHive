@@ -17,11 +17,16 @@ import {
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
+import {
+  authLimiter,
+  passwordResetLimiter,
+} from "../middlewares/rateLimit.middlewares.js";
 const router = Router();
 
 
 router.post(
   "/register",
+  authLimiter,
   upload.fields([
     { name: "avatar", maxCount: 1 },
     { name: "coverImage", maxCount: 1 },
@@ -30,16 +35,16 @@ router.post(
 );
 
 
-router.route("/login").post(loginUser);
+router.route("/login").post(authLimiter, loginUser);
 
 
 // seccure route
 
 router.route("/logout").post(verifyJWT, logoutUser);
-router.route("/refresh-token").post(refreshAccessToken);
-router.route("/reset-password-otp").post(resetPasswordOTP);
-router.route("/verify-otp").post(verifyOTP);
-router.route("/reset-password").post(resetPassword);
+router.route("/refresh-token").post(authLimiter, refreshAccessToken);
+router.route("/reset-password-otp").post(passwordResetLimiter, resetPasswordOTP);
+router.route("/verify-otp").post(passwordResetLimiter, verifyOTP);
+router.route("/reset-password").post(passwordResetLimiter, resetPassword);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account-details").patch(verifyJWT, updateAccoutDetails);

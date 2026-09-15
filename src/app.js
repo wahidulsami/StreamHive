@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { generalLimiter } from "./middlewares/rateLimit.middlewares.js";
 
 const app = express();
 
@@ -26,6 +27,8 @@ app.use(
 app.use(express.static("public"));
 
 app.use(cookieParser());
+
+app.use(generalLimiter);
 
 // routes import
 
