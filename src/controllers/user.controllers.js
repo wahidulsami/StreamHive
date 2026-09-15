@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import transporter from "../config/nodemailer.js";
 import { PASSWORD_RESET_TEMPLATE } from "../config/emailTemplates.js";
+import env from "../config/env.js";
 
 const genrateAccessAndRefreshToken = async (userId) => {
   const user = await User.findById(userId);
@@ -186,7 +187,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     const decodedToken = jwt.verify(
       incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET
+      env.auth.refreshTokenSecret
     );
 
     const user = await User.findById(decodedToken?._id);
@@ -350,7 +351,7 @@ const resetPasswordOTP = asyncHandler(async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   const mailOptions = {
-    from: process.env.SENDER_EMAIL,
+    from: env.email.sender,
     to: user.email,
     subject: "Password reset OTP",
     html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(

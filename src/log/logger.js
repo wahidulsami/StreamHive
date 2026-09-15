@@ -1,9 +1,10 @@
 import winston from "winston";
+import env from "../config/env.js";
 
 const { combine, timestamp, json, simple, colorize, printf } = winston.format;
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || "info",
+  level: env.app.logLevel,
   format: combine(
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     json()

@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.model.js";
+import env from "../config/env.js";
 
 export const optionalJWT = asyncHandler(async (req, res, next) => {
   try {
@@ -14,7 +15,7 @@ export const optionalJWT = asyncHandler(async (req, res, next) => {
       return next();
     }
 
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedToken = jwt.verify(token, env.auth.accessTokenSecret);
 
     const user = await User.findById(decodedToken._id).select(
       "-password -refreshToken"
