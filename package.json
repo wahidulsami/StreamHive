@@ -21,9 +21,9 @@
   "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
     "start": "node -r dotenv/config --experimental-json-modules src/index.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit --detectOpenHandles",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch --forceExit",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage --detectOpenHandles"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -48,8 +48,12 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "jest": "^30.5.1",
+    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "supertest": "^7.2.2"
+  },
+  "allowScripts": {
+    "mongodb-memory-server@11.2.0": true
   }
 }

@@ -11,13 +11,15 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Test connection
-transporter.verify(function(error, success) {
-   if (error) {
-        console.log("SMTP Error:", error);
-   } else {
-        console.log("Server is ready to take messages");
-   }
-});
+// Test connection (skip in test environment to avoid ECONNREFUSED noise)
+if (env.app.nodeEnv !== "test") {
+  transporter.verify(function(error, success) {
+     if (error) {
+          console.log("SMTP Error:", error);
+     } else {
+          console.log("Server is ready to take messages");
+     }
+  });
+}
 
 export default transporter;

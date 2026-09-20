@@ -12,6 +12,7 @@ const logger = winston.createLogger({
   defaultMeta: { service: "totube-api" },
   transports: [
     new winston.transports.Console({
+      silent: process.env.NODE_ENV === "test",
       format: combine(
         colorize(),
         timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
@@ -21,21 +22,23 @@ const logger = winston.createLogger({
         })
       ),
     }),
-    new winston.transports.File({
-      filename: "logs/combined.log",
-      format: combine(
-        timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-        json()
-      ),
-    }),
-    new winston.transports.File({
-      filename: "logs/error.log",
-      level: "error",
-      format: combine(
-        timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-        json()
-      ),
-    }),
+    ...(process.env.NODE_ENV !== "test" ? [
+      new winston.transports.File({
+        filename: "logs/combined.log",
+        format: combine(
+          timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+          json()
+        ),
+      }),
+      new winston.transports.File({
+        filename: "logs/error.log",
+        level: "error",
+        format: combine(
+          timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+          json()
+        ),
+      }),
+    ] : []),
   ],
 });
 
