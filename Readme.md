@@ -11,6 +11,8 @@ Built with **Node.js**, **Express.js**, and **MongoDB**
 [![Express](https://img.shields.io/badge/Express.js-5-black?style=for-the-badge&logo=express)]()
 [![MongoDB](https://img.shields.io/badge/MongoDB-8+-47A248?style=for-the-badge&logo=mongodb)]()
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)]()
+[![CI Pipeline](https://github.com/wahidulsami/StreamHive/actions/workflows/ci.yml/badge.svg)](https://github.com/wahidulsami/StreamHive/actions/workflows/ci.yml)
+
 
 </div>
 
