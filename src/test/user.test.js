@@ -7,12 +7,14 @@
  */
 import { jest } from "@jest/globals";
 
+const uploadCloudinaryMock = jest.fn().mockResolvedValue({
+  secure_url: "https://res.cloudinary.com/test/upload/v1/test.jpg",
+  duration: 120.5,
+});
+
 // Mock Cloudinary BEFORE importing app (ESM mock hoisting)
 jest.unstable_mockModule("../utils/cloudnary.js", () => ({
-  uploadCloudinary: jest.fn().mockResolvedValue({
-    secure_url: "https://res.cloudinary.com/test/upload/v1/test.jpg",
-    duration: 120.5,
-  }),
+  uploadCloudinary: uploadCloudinaryMock,
 }));
 
 // Mock nodemailer transporter BEFORE importing app (ESM mock hoisting)
@@ -30,7 +32,6 @@ const request = supertest.default;
 const { createTestUser, authHeader } = await import("./helpers.js");
 const { Video } = await import("../models/Video.model.js");
 const { User } = await import("../models/User.model.js");
-const { uploadCloudinary } = await import("../utils/cloudnary.js");
 const { default: transporterMock } = await import("../config/nodemailer.js");
 
 describe("User Controller (additional handlers)", () => {
@@ -147,7 +148,7 @@ describe("User Controller (additional handlers)", () => {
         });
 
       expect(res.status).toBe(200);
-      expect(uploadCloudinary).toHaveBeenCalled();
+      expect(uploadCloudinaryMock).toHaveBeenCalled();
     });
 
     it("should return 400 when no file is provided", async () => {
@@ -171,7 +172,7 @@ describe("User Controller (additional handlers)", () => {
         });
 
       expect(res.status).toBe(200);
-      expect(uploadCloudinary).toHaveBeenCalled();
+      expect(uploadCloudinaryMock).toHaveBeenCalled();
     });
 
     it("should return 400 when no file is provided", async () => {
