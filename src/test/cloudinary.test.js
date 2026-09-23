@@ -5,7 +5,6 @@
  * Mocks: cloudinary.v2, fs (via jest.unstable_mockModule)
  */
 import { jest } from "@jest/globals";
-import fs from "fs";
 
 // Mock cloudinary and fs before importing the module under test
 jest.unstable_mockModule("cloudinary", () => ({

@@ -6,6 +6,7 @@
 
 Built with **Node.js**, **Express.js**, and **MongoDB**
 
+[![CI](https://github.com/wahidulsami/backend/actions/workflows/ci.yml/badge.svg)](https://github.com/wahidulsami/backend/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-22+-339933?style=for-the-badge&logo=node.js)]()
 [![Express](https://img.shields.io/badge/Express.js-5-black?style=for-the-badge&logo=express)]()
 [![MongoDB](https://img.shields.io/badge/MongoDB-8+-47A248?style=for-the-badge&logo=mongodb)]()

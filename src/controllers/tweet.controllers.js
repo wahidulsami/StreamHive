@@ -1,4 +1,3 @@
-import { User } from "../models/User.model.js";
 import { Tweet } from "../models/Tweet.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";

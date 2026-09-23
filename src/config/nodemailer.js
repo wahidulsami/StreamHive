@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 // Test connection (skip in test environment to avoid ECONNREFUSED noise)
 if (env.app.nodeEnv !== "test") {
-  transporter.verify(function(error, success) {
+  transporter.verify(function(error) {
      if (error) {
           console.log("SMTP Error:", error);
      } else {

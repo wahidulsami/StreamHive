@@ -23,7 +23,7 @@ export const optionalJWT = asyncHandler(async (req, res, next) => {
 
     req.user = user || null; 
     next();
-  } catch (error) {
+  } catch {
     req.user = null; 
     next();
   }

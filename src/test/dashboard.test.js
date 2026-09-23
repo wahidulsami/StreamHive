@@ -5,7 +5,6 @@
  *        getRecentActivity, getTopVideo, getChannelComments
  */
 import { jest } from "@jest/globals";
-import mongoose from "mongoose";
 
 // Mock Cloudinary BEFORE importing app (ESM mock hoisting)
 jest.unstable_mockModule("../utils/cloudnary.js", () => ({

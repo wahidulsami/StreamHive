@@ -1,7 +1,7 @@
 import logger from "../log/logger.js";
 import env from "../config/env.js";
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   let error = err;
 
   if (!(error instanceof Error)) {

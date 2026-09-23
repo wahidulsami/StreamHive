@@ -66,7 +66,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         liked ? "Video liked successfully" : "Video unliked successfully"
       )
     );
-  } catch (error) {
+  } catch {
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(500, "Failed to toggle video like");
@@ -129,7 +129,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         liked ? "Comment liked successfully" : "Comment unliked successfully"
       )
     );
-  } catch (error) {
+  } catch {
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(500, "Failed to toggle comment like");
@@ -196,7 +196,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         liked ? "Tweet liked successfully" : "Tweet unliked successfully"
       )
     );
-  } catch (error) {
+  } catch {
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(500, "Failed to toggle tweet like");

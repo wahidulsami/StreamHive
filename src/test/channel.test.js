@@ -21,7 +21,7 @@ const { createTestUser } = await import("./helpers.js");
 const { Video } = await import("../models/Video.model.js");
 
 describe("Channel Routes", () => {
-  let user, video;
+  let user;
 
   beforeEach(async () => {
     user = await createTestUser(app, {
@@ -30,7 +30,7 @@ describe("Channel Routes", () => {
       username: "channeltestuser",
     });
 
-    video = await Video.create({
+    await Video.create({
       title: "Channel Test Video",
       description: "Test",
       videoFile: "https://res.cloudinary.com/test/video.mp4",

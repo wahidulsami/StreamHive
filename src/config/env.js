@@ -39,7 +39,7 @@ if (!parsed.success) {
     .map((issue) => `  → ${issue.path.join(".")}: ${issue.message}`)
     .join("\n");
 
-  console.error(`\n✖ Missing or invalid environment variables:\n${formatted}\n`);
+  console.error(`❌ Invalid environment variables:\n${formatted}`);
   process.exit(1);
 }
 

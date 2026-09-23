@@ -23,7 +23,7 @@ const { Video } = await import("../models/Video.model.js");
 const { Comment } = await import("../models/Comment.model.js");
 
 describe("Comment Routes", () => {
-  let token, userId, otherToken, otherUserId;
+  let token, userId, otherUserId;
   let video;
 
   beforeEach(async () => {
@@ -40,7 +40,6 @@ describe("Comment Routes", () => {
       username: "othercommenter",
     });
     otherUserId = other.user._id;
-    otherToken = other.accessToken;
 
     video = await Video.create({
       title: "Comment Test Video",

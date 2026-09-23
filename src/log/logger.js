@@ -1,7 +1,7 @@
 import winston from "winston";
 import env from "../config/env.js";
 
-const { combine, timestamp, json, simple, colorize, printf } = winston.format;
+const { combine, timestamp, json, colorize, printf } = winston.format;
 
 const logger = winston.createLogger({
   level: env.app.logLevel,

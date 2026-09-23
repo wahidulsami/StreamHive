@@ -22,12 +22,10 @@ const { createTestUser, authHeader } = await import("./helpers.js");
 const { Video } = await import("../models/Video.model.js");
 const { Comment } = await import("../models/Comment.model.js");
 const { Tweet } = await import("../models/Tweet.model.js");
-const { Like } = await import("../models/Like.model.js");
 
 describe("Like Routes", () => {
   let token, userId;
   let video, comment, tweet;
-  let otherToken;
 
   beforeEach(async () => {
     const { user, accessToken } = await createTestUser(app, {
@@ -37,12 +35,11 @@ describe("Like Routes", () => {
     userId = user._id;
     token = accessToken;
 
-    const other = await createTestUser(app, {
+    await createTestUser(app, {
       fullname: "Other User",
       email: "otherliker@example.com",
       username: "otherliker",
     });
-    otherToken = other.accessToken;
 
     video = await Video.create({
       title: "Like Test Video",
